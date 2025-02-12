@@ -11,9 +11,7 @@ services:
       - GPU_COUNT=${GPU_COUNT:-1}
       - HARMONY_SETTINGS_SHARED_MASTER_WORKER_FOLDER=/shared
       - HARMONY_SETTING_WORKING_DIR=/workdir
-      # the following assumes you have a model_registry directory with models in the same dir as the compose file
-      # you can mount any other directory, making sure to mount it also as a volume
-      - HARMONY_SETTING_MODEL_REGISTRY_ROOT=${MODEL_REGISTRY_PATH:-/localnvme/model_registry}
+      - HARMONY_SETTING_MODEL_REGISTRY_ROOT=/model_registry
     shm_size: 2g
     deploy:
       resources:
@@ -22,7 +20,7 @@ services:
             - capabilities: [gpu]
     volumes:
       # bind mounts to persist data and share datasets with control-plane service
-      - .:/localnvme
+      - ${MODEL_REGISTRY_HOST_PATH:-./model_registry}:/model_registry
       - ./cache/huggingface:/home/adaptive/.cache/huggingface
       - ./shared:/shared
       - ./workdir:/workdir
@@ -63,5 +61,5 @@ services:
       - ADAPTIVE_SERVER__ROOT_URL=${ROOT_URL}
       - ADAPTIVE_HARMONY__URL=http://harmony:50053
       - ADAPTIVE_HARMONY__SHARED_DIRECTORY__PATH=/shared
-      - HARMONY_SETTING_MODEL_REGISTRY_ROOT=${MODEL_REGISTRY_PATH:-/localnvme/model_registry}
+      - HARMONY_SETTING_MODEL_REGISTRY_ROOT=/model_registry
     restart: on-failure
