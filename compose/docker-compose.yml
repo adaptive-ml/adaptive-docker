@@ -1,0 +1,65 @@
+# this docker compose is compatible with Adaptive release v0.2.1
+name: adaptive
+services:
+  harmony:
+    runtime: nvidia
+    image: ${IMAGE_REPO}:${HARMONY_IMAGE_TAG}
+    environment:
+      - ORDINAL=0
+      - MASTER_ADDR=127.0.0.1
+      - WORLD_SIZE=${GPU_COUNT:-1}
+      - GPU_COUNT=${GPU_COUNT:-1}
+      - HARMONY_SETTINGS_SHARED_MASTER_WORKER_FOLDER=/shared
+      - HARMONY_SETTING_WORKING_DIR=/workdir
+      - HARMONY_SETTING_MODEL_REGISTRY_ROOT=/model_registry
+    shm_size: 2g
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    volumes:
+      # bind mounts to persist data and share datasets with control-plane service
+      - ${MODEL_REGISTRY_HOST_PATH:-./model_registry}:/model_registry
+      - ./cache/huggingface:/home/adaptive/.cache/huggingface
+      - ./shared:/shared
+      - ./workdir:/workdir
+    ports:
+      - 50053:50053
+    restart: on-failure
+  db:
+    image: postgres:latest
+    environment:
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_USER=adaptive
+      - POSTGRES_DB=adaptive
+    volumes:
+      # bind mount to persist DB data
+      - ${DB_DATA_HOST_PATH:-./db_data}:/var/lib/postgresql/data  
+  control-plane:
+    depends_on:
+      - harmony
+      - db
+    image: ${IMAGE_REPO}:${CONTROL_PLANE_IMAGE_TAG} 
+    ports:
+      - 80:9000
+    volumes:
+      # bind mount for sharing datasets with harmony
+      - ./shared:/shared
+    environment:
+      - ADAPTIVE_APP__SECRET=changeme-secret-db40431e-c2fd-48a6-acd5-854232c2ed94-01dd4d01-dc7b-4315
+      - ADAPTIVE_AUTH__ADMINS=${ADMINS}
+      - ADAPTIVE_AUTH__DEFAULT_TEAM=default
+      - ADAPTIVE_AUTH__DEFAULT_ROLE=admin
+      - ADAPTIVE_AUTH__SESSION__SECURE=true
+      - ADAPTIVE_AUTH__SESSION__EXPIRATION_SECONDS=518400
+      - ADAPTIVE_AUTH__OIDC__PROVIDERS=${OIDC_PROVIDERS}
+      - ADAPTIVE_DB__RUN_MIGRATIONS=true
+      - ADAPTIVE_DB__URL=postgresql://adaptive:${DB_PASSWORD}@db:5432/adaptive
+      - ADAPTIVE_HTTP_CLIENT__TIMEOUT_SECS=90
+      - ADAPTIVE_SERVER__BIND=0.0.0.0:9000
+      - ADAPTIVE_SERVER__ROOT_URL=${ROOT_URL}
+      - ADAPTIVE_HARMONY__URL=http://harmony:50053
+      - ADAPTIVE_HARMONY__SHARED_DIRECTORY__PATH=/shared
+      - HARMONY_SETTING_MODEL_REGISTRY_ROOT=/model_registry
+    restart: on-failure
