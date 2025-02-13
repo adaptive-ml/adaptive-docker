@@ -11,10 +11,9 @@ services:
       - ${DB_DATA_HOST_PATH:-./db_data}:/var/lib/postgresql/data  
   volume-init:
     image: alpine
-    command: [ "sh", "-c", "chown -R 1002:1002 /model_registry /shared /workdir /huggingface_cache" ]
+    command: [ "sh", "-c", "chmod -R 777 /model_registry && chown -R 1002:1002 /shared /workdir" ]
     volumes:
       - ${MODEL_REGISTRY_HOST_PATH:-./model_registry}:/model_registry
-      - ./cache/huggingface:/huggingface_cache
       - ./shared:/shared
       - ./workdir:/workdir
     restart: "no"
@@ -40,7 +39,6 @@ services:
             - capabilities: [gpu]
     volumes:
       - ${MODEL_REGISTRY_HOST_PATH:-./model_registry}:/model_registry
-      - ./cache/huggingface:/home/adaptive/.cache/huggingface
       - ./shared:/shared
       - ./workdir:/workdir
     ports:
