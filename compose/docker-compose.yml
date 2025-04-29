@@ -48,14 +48,16 @@ services:
     ports:
       - 50053:50053
     restart: on-failure
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:50053/ls || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
   control-plane:
     depends_on:
       volume-init:
         condition: service_completed_successfully
-      harmony: 
-        condition: service_started
-      db: 
-        condition: service_started
     image: ${IMAGE_REPO}:${CONTROL_PLANE_IMAGE_TAG} 
     ports:
       - 9000:9000
@@ -78,4 +80,10 @@ services:
       - ADAPTIVE_HARMONY__SHARED_DIRECTORY__PATH=/shared
       - HARMONY_SETTING_MODEL_REGISTRY_ROOT=/model_registry
     restart: on-failure
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
 
