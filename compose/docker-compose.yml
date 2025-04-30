@@ -1,4 +1,4 @@
-# this docker compose is compatible with Adaptive release >= 0.2.1
+# this docker compose is compatible with Adaptive release >= 0.5.0
 name: adaptive
 services:
   db:
@@ -33,7 +33,7 @@ services:
       - HARMONY_SETTING_MODEL_REGISTRY_ROOT=/model_registry
       - GROUP=default
       - PARTITION_KEY=default-partition
-      - CONTROL_PLANE_URL=http://control-plane:9000
+      - CONTROL_PLANE_URL=http://control-plane:9009
       - SERVICE_URL=http://harmony:50053
     shm_size: 2g
     deploy:
