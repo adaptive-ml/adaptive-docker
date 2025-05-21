@@ -6,6 +6,10 @@ logging {
 // discover docker containers on the host
 discovery.docker "linux" {
   host = "unix:///var/run/docker.sock"
+  filter {
+    name = "label"
+    values = ["ingest_adaptive_logs=true"]
+  }
 }
 
 // Set loki endpoint
@@ -30,7 +34,6 @@ discovery.relabel "logs_integrations_docker" {
 loki.source.docker "default" {
   host       = "unix:///var/run/docker.sock"
   targets    = discovery.docker.linux.targets
-  filter     = {name = "label", values = ["ingest_adaptive_logs=true"] }
   labels     = {"platform" = "docker"}
   relabel_rules = discovery.relabel.logs_integrations_docker.rules
   forward_to = [loki.write.grafana_loki.receiver]

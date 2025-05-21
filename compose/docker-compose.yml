@@ -50,6 +50,7 @@ services:
       - PARTITION_KEY=default-partition
       - CONTROL_PLANE_URL=http://control-plane:9009
       - SERVICE_URL=http://harmony:50053
+      - JOB_LOG_DIR=/workdir/job_logs/
     shm_size: 2g
     deploy:
       resources:
@@ -79,7 +80,7 @@ services:
     container_name: control-plane
     image: ${CONTROL_PLANE_IMAGE_REPO:-${IMAGE_REPO}}:${CONTROL_PLANE_IMAGE_TAG}
     ports:
-      - 9000:9000
+      - ${HOST_HTTP_PORT:-9000}:9000
     volumes:
       - ./shared:/shared
     environment:

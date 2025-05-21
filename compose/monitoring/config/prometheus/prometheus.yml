@@ -21,9 +21,9 @@ scrape_configs:
     static_configs:
       - targets: ["localhost:9090"]
 
-  - job_name: "control_plane"
+  - job_name: "control-plane"
     static_configs:
-      - targets: ["control_plane:9009"]
+      - targets: ["control-plane:9009"]
 
   - job_name: "harmony"
     static_configs:

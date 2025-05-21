@@ -7,7 +7,7 @@ services:
     volumes:
       - ./config/grafana/datasources/grafana.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
       - ./config/grafana/plugins/app.yaml:/etc/grafana/provisioning/plugins/app.yaml
-      - ./data/grafana:/var/lib/grafana
+      - grafana_data:/var/lib/grafana
     environment:
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
@@ -24,8 +24,8 @@ services:
       - 3100:3100
     command: -config.file=/etc/loki/loki.yaml
     volumes:
-      - ./config/loki/loki.yaml:/etc/loki/loki.yaml
-      - ./data/loki:/loki
+      - ./config/loki/loki.yaml:/etc/loki/loki.yaml:ro
+      - loki_data:/loki
 
   alloy:
     image: grafana/alloy:latest
@@ -34,7 +34,7 @@ services:
       - 12345:12345
     command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
     volumes:
-      - ./data/alloy:/var/lib/alloy
+      - alloy_data:/var/lib/alloy
       - ../workdir/job_logs/:/logs/
       - ./config/alloy/config.alloy:/etc/alloy/config.alloy
       - /var/run/docker.sock:/var/run/docker.sock
@@ -49,4 +49,10 @@ services:
       - --storage.tsdb.path=/prometheus
     volumes:
       - ./config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-      - ./data/prometheus:/prometheus
+      - prometheus_data:/prometheus
+
+volumes:
+  loki_data:
+  alloy_data:
+  prometheus_data:
+  grafana_data:
