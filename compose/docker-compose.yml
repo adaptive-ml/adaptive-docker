@@ -32,8 +32,9 @@ services:
     restart: "no"
 
   harmony:
+    container_name: harmony
     runtime: nvidia
-    image: ${IMAGE_REPO_HARMONY:-${IMAGE_REPO}}:${HARMONY_IMAGE_TAG}
+    image: ${HARMONY_IMAGE_REPO:-${IMAGE_REPO}}:${HARMONY_IMAGE_TAG}
     depends_on:
       volume-init:
         condition: service_completed_successfully
@@ -75,7 +76,8 @@ services:
     depends_on:
       volume-init:
         condition: service_completed_successfully
-    image: ${IMAGE_REPO_CONTROL_PLANE:-${IMAGE_REPO}}:${CONTROL_PLANE_IMAGE_TAG}
+    container_name: control-plane
+    image: ${CONTROL_PLANE_IMAGE_REPO:-${IMAGE_REPO}}:${CONTROL_PLANE_IMAGE_TAG}
     ports:
       - 9000:9000
     volumes:
