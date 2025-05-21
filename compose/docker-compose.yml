@@ -33,7 +33,7 @@ services:
 
   harmony:
     runtime: nvidia
-    image: ${IMAGE_REPO}:${HARMONY_IMAGE_TAG}
+    image: ${IMAGE_REPO_HARMONY:-${IMAGE_REPO}}:${HARMONY_IMAGE_TAG}
     depends_on:
       volume-init:
         condition: service_completed_successfully
@@ -75,7 +75,7 @@ services:
     depends_on:
       volume-init:
         condition: service_completed_successfully
-    image: ${IMAGE_REPO}:${CONTROL_PLANE_IMAGE_TAG}
+    image: ${IMAGE_REPO_CONTROL_PLANE:-${IMAGE_REPO}}:${CONTROL_PLANE_IMAGE_TAG}
     ports:
       - 9000:9000
     volumes:
