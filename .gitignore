@@ -1,3 +1,5 @@
 workdir/
+shared/
 data/
+./monitoring/data/
 .env
