@@ -1,0 +1,72 @@
+logging {
+    level  = "info"
+    format = "logfmt"
+}
+
+// discover docker containers on the host
+discovery.docker "linux" {
+  host = "unix:///var/run/docker.sock"
+  filter {
+    name = "label"
+    values = ["ingest_adaptive_logs=true"]
+  }
+}
+
+// Set loki endpoint
+loki.write "grafana_loki" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}
+
+// better labelling of docker containers
+discovery.relabel "logs_integrations_docker" {
+  targets = []
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex = "/(.*)"
+    target_label = "service_name"
+  }
+}
+
+// read docker logs from container with label "ingest_adaptive_logs=true" and forward to loki
+loki.source.docker "default" {
+  host       = "unix:///var/run/docker.sock"
+  targets    = discovery.docker.linux.targets
+  labels     = {"platform" = "docker"}
+  relabel_rules = discovery.relabel.logs_integrations_docker.rules
+  forward_to = [loki.write.grafana_loki.receiver]
+}
+
+// discover job files from the /logs folder
+local.file_match "job_files" {
+    path_targets = [{"__path__" = "/logs/job_*.*.log"}]
+    sync_period  = "5s"
+}
+
+// extract job_id from filename
+discovery.relabel "job_files_labels" {
+  targets = local.file_match.job_files.targets
+
+  rule {
+    source_labels = ["__path__"]
+    regex = ".*/job_([^.]+).*\\.log"
+    target_label = "job_id"
+  }
+  rule {
+    source_labels = ["__path__"]
+    regex = ".*/job_[^.]+\\.([^.]+)\\.log"
+    target_label = "type"
+  }
+  rule {
+    target_label = "service_name"
+    replacement = "harmony"
+  }
+}
+
+// send job files to loki
+loki.source.file "job_files" {
+  targets = discovery.relabel.job_files_labels.output
+  forward_to = [loki.write.grafana_loki.receiver]
+}

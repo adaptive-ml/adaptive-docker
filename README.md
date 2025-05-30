@@ -2,7 +2,11 @@
 
 This repository contains templates to deploy Adaptive Engine with docker compose on a single node.
 
-To deploy, replace the relevant values in `compose/.env`.
+To deploy, copy the `compose/sample.env` file to `compose/.env` file and replace the relevant values in `compose/.env`.
+
+```
+cp compose/sample.env compose/.env
+```
 
 `GPU_COUNT` must match the number of available GPUs in your server. Be sure to also replace your OIDC provider client id and secret, as well as root url, so that you can authenticate to the Adaptive UI.
 
@@ -16,4 +20,4 @@ To launch Adaptive Engine, run the following commands:
 ```bash
 cd compose
 docker compose up -d
-````
+```
