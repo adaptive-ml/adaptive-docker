@@ -51,7 +51,7 @@ services:
       - CONTROL_PLANE_URL=http://control-plane:9009
       - SERVICE_URL=http://harmony:50053
       - JOB_LOG_DIR=/workdir/job_logs/
-      - ENABLE_SANDBOX=1
+      - ENABLE_SANDBOX=${ENABLE_SANDBOX:-1}
       - SANDBOX_SERVICE_URL=http://sandkasten:3005
     shm_size: 2g
     deploy:
