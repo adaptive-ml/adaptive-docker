@@ -17,6 +17,16 @@ services:
     volumes:
       - ${DB_DATA_HOST_PATH:-./db_data}:/var/lib/postgresql/data
 
+  redis:
+    image: redis:latest
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    restart: on-failure
+    ports:
+      - 6379:6379
+    labels:
+      ingest_adaptive_logs: true
+
   volume-init:
     image: alpine
     command:
@@ -51,6 +61,7 @@ services:
       - CONTROL_PLANE_URL=http://control-plane:9009
       - SERVICE_URL=http://harmony:50053
       - JOB_LOG_DIR=/workdir/job_logs/
+      - REDIS_URL=redis://redis:6379
     shm_size: 2g
     deploy:
       resources:
@@ -101,6 +112,7 @@ services:
       - ADAPTIVE_HARMONY__SHARED_DIRECTORY__PATH=/shared
       - ADAPTIVE_GRAFANA__URL=http://grafana:3000
       - ADAPTIVE_APP__ENABLE_GQL_SCHEMA_INTROSPECTION=${ENABLE_GQL_INTROSPECTION:-false}
+      - ADAPTIVE_REDIS__URL=redis://redis:6379
     restart: on-failure
     labels:
       ingest_adaptive_logs: true
