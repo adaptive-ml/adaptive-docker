@@ -57,6 +57,8 @@ services:
       - CONTROL_PLANE_URL=http://control-plane:9009
       - SERVICE_URL=http://harmony:50053
       - JOB_LOG_DIR=/workdir/job_logs/
+      - ENABLE_SANDBOX=${ENABLE_SANDBOX:-1}
+      - SANDBOX_SERVICE_URL=http://sandkasten:3005
       - REDIS_URL=redis://redis:6379
     shm_size: 2g
     deploy:
@@ -114,6 +116,26 @@ services:
       ingest_adaptive_logs: true
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:9000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  sandkasten:
+    depends_on:
+      volume-init:
+        condition: service_completed_successfully
+    container_name: sandkasten
+    privileged: true
+    image: ${SANDKASTEN_IMAGE_REPO:-${IMAGE_REPO}}:${SANDKASTEN_IMAGE_TAG}
+    volumes:
+      - ./shared:/shared
+      - ./workdir:/workdir
+    restart: on-failure
+    labels:
+      ingest_adaptive_logs: true
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3005/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
