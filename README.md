@@ -1,5 +1,7 @@
 # adaptive-docker
 
+> **Deprecated:** Docker Compose deployment is no longer supported. The only supported deployment method is Kubernetes via the [Adaptive Helm Chart](https://github.com/adaptive-ml/adaptive-helm-chart).
+
 This repository contains templates to deploy Adaptive Engine with docker compose on a single node.
 
 To deploy, copy the `compose/sample.env` file to `compose/.env` file and replace the relevant values in `compose/.env`.
